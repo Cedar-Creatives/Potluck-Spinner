@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Cas Lagos Group - End of Year Get-Together Potluck Spinner</title>
+  <meta name="description" content="Cas Lagos group End of year get together chop spinner. Spin once for your dish so nobody brings the same soup or drinks to the party!">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Marquee Ticker -->
+  <div class="ticker-wrap" aria-hidden="true">
+    <div class="ticker-content" id="ticker-content">
+      <div class="ticker-item">🎉 CAS LAGOS GROUP END OF YEAR GET-TOGETHER CHOP SPINNER</div>
+      <div class="ticker-item">✨ ONE PERSON, ONE DISH — NO DUPLICATES!</div>
+      <div class="ticker-item">🍲 PEPPER SOUP, SWALLOW, SUYA & WINE UP FOR GRABS!</div>
+      <div class="ticker-item">🎉 CAS LAGOS GROUP END OF YEAR GET-TOGETHER CHOP SPINNER</div>
+      <div class="ticker-item">✨ ONE PERSON, ONE DISH — NO DUPLICATES!</div>
+    </div>
+  </div>
+
+  <div class="app-container">
+
+    <!-- Hero Header -->
+    <header class="hero-header">
+      <img src="party_banner.jpg" alt="Cas Lagos House Party Banner" class="hero-banner-img">
+      <div class="hero-body">
+        <div class="hero-top-row">
+          <span class="badge-kicker">🏠 CAS LAGOS END OF YEAR GET-TOGETHER</span>
+          <div class="header-actions">
+            <button type="button" class="icon-btn" id="sound-toggle-btn" title="Toggle Sound FX" aria-label="Toggle Sound FX">
+              🔊
+            </button>
+            <button type="button" class="icon-btn" id="theme-toggle-btn" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
+              🌙
+            </button>
+            <button type="button" class="icon-btn" id="host-trigger-btn" title="Host Controls" aria-label="Host Tools">
+              ⚙️
+            </button>
+          </div>
+        </div>
+
+        <h1 class="hero-title">Get-Together Day Potluck Spinner</h1>
+        <p class="hero-tagline">
+          Enter your name and spin the wheel! Whatever food or drink lands is yours to bring to the party. 
+          Each attendee gets <strong>only 1 spin</strong>, ensuring we have a full feast with no duplicates!
+        </p>
+
+        <!-- Progress Meter -->
+        <div class="hero-meter-card">
+          <div class="meter-track-container">
+            <div class="meter-labels">
+              <span id="meter-status-text">Loading party menu…</span>
+              <span id="meter-count-text">0 / 0 claimed</span>
+            </div>
+            <div class="meter-bar">
+              <div class="meter-fill" id="meter-fill-bar"></div>
+            </div>
+          </div>
+          <div class="user-status-badge" id="my-status-badge" hidden>
+            <span id="my-badge-emoji">🍲</span>
+            <span>You're bringing <strong id="my-badge-item">...</strong></span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="notice-box" id="notice-box" hidden role="status"></div>
+
+    <!-- Main Interactive Stage Grid -->
+    <main class="stage-grid" id="main-stage">
+      
+      <!-- Panel 1: Names Wheel -->
+      <section class="stage-panel name-panel" id="name-panel">
+        <header class="panel-header">
+          <div class="step-num">1</div>
+          <div>
+            <h2>Who's Up?</h2>
+            <p id="name-subtext">Select or spin for a name</p>
+          </div>
+        </header>
+
+        <div class="wheel-container">
+          <div class="wheel-pointer" id="name-pointer">
+            <svg viewBox="0 0 30 40"><path d="M3 3h24L15 37z"/></svg>
+          </div>
+          <canvas id="name-wheel-canvas" class="wheel-canvas" width="380" height="380"></canvas>
+        </div>
+
+        <button type="button" class="btn-primary gold" id="spin-names-btn">
+          <span>🎲 Spin the Names</span>
+        </button>
+      </section>
+
+      <!-- Panel 2: Action / Guest Name Selection -->
+      <section class="stage-panel action-panel" id="action-panel">
+        <div class="action-section" id="pick-choice-view">
+          <span class="eyebrow-tag" id="choose-tag">Find Your Name</span>
+          <p class="current-guest-name" style="font-size: 24px; color: var(--text-muted);">
+            Tap your name below or type it to add yourself to the party list!
+          </p>
+
+          <div class="chips-cloud" id="guest-chips-container"></div>
+
+          <form class="add-name-form" id="add-guest-form" autocomplete="off">
+            <input type="text" id="guest-name-input" class="input-field" placeholder="Enter your name to spin" maxlength="40">
+            <button type="submit" class="btn-add" id="add-guest-btn">Add</button>
+          </form>
+        </div>
+
+        <div class="action-section" id="pick-active-view" hidden>
+          <span class="eyebrow-tag">Now Picking For</span>
+          <p class="current-guest-name" id="active-guest-name">--</p>
+          <p style="color: var(--text-muted); font-size: 14px;">
+            Spin the food wheel to allocate your dish! It will be prefilled directly onto the live party menu.
+          </p>
+          <button type="button" class="btn-secondary" id="change-guest-btn">
+            🔄 Wrong name? Pick again
+          </button>
+        </div>
+
+        <div class="action-section" id="pick-locked-view" hidden>
+          <span class="eyebrow-tag">🎉 You are All Set!</span>
+          <p class="current-guest-name" id="locked-item-name" style="color: var(--accent-gold);"></p>
+          <p style="color: var(--text-muted); font-size: 14px;">
+            You have already spun and claimed your dish. Each attendee has only 1 spin!
+          </p>
+          <button type="button" class="btn-primary btn-whatsapp" id="share-my-item-btn">
+            💬 Share My Dish on WhatsApp
+          </button>
+        </div>
+      </section>
+
+      <!-- Panel 3: Food & Drinks Wheel -->
+      <section class="stage-panel food-panel" id="food-panel">
+        <header class="panel-header">
+          <div class="step-num food-step">2</div>
+          <div>
+            <h2>What Are They Bringing?</h2>
+            <p id="food-subtext">Spin to allocate from available dishes</p>
+          </div>
+        </header>
+
+        <div class="wheel-container">
+          <div class="wheel-pointer" id="food-pointer">
+            <svg viewBox="0 0 30 40"><path d="M3 3h24L15 37z"/></svg>
+          </div>
+          <canvas id="food-wheel-canvas" class="wheel-canvas" width="480" height="480"></canvas>
+        </div>
+
+        <ul class="category-legend" id="category-legend"></ul>
+
+        <button type="button" class="btn-primary" id="spin-food-btn" disabled>
+          <span>✨ Select Name First</span>
+        </button>
+      </section>
+
+    </main>
+
+    <!-- Lineup Board Section -->
+    <section class="lineup-section" id="lineup">
+      <div class="lineup-header">
+        <div class="lineup-title-wrap">
+          <h2>📋 The Party Lineup</h2>
+          <p id="lineup-subtitle">Live menu of who's bringing what to the End of Year Get-Together.</p>
+        </div>
+        <button type="button" class="btn-secondary btn-whatsapp" id="whatsapp-share-btn">
+          📲 Send Lineup to WhatsApp
+        </button>
+      </div>
+
+      <div class="board-columns" id="board-columns-container"></div>
+    </section>
+
+    <!-- Host Tools Modal / Section -->
+    <section class="host-panel" id="host-panel" hidden>
+      <h2>⚙️ Host Admin Dashboard</h2>
+      <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">
+        Exclusive controls for party organizer (Cas Lagos Host).
+      </p>
+
+      <div class="host-grid">
+        <form id="host-assign-form">
+          <p style="font-weight: 700; margin-bottom: 8px;">Force Assign Dish to Guest</p>
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label for="host-guest-input">Guest Name</label>
+            <input type="text" id="host-guest-input" placeholder="e.g. Tobi" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label for="host-item-select">Available Dish</label>
+            <select id="host-item-select" required></select>
+          </div>
+          <button type="submit" class="btn-secondary">Assign Dish</button>
+        </form>
+
+        <form id="host-add-item-form">
+          <p style="font-weight: 700; margin-bottom: 8px;">Add New Item to Menu</p>
+          <div style="display: grid; grid-template-columns: 80px 1fr; gap: 8px; margin-bottom: 10px;">
+            <div class="form-group">
+              <label for="host-emoji-input">Emoji</label>
+              <input type="text" id="host-emoji-input" placeholder="🍲" maxlength="4">
+            </div>
+            <div class="form-group">
+              <label for="host-label-input">Item Name</label>
+              <input type="text" id="host-label-input" placeholder="e.g. Peppered Suya" required>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label for="host-cat-select">Category</label>
+            <select id="host-cat-select" required></select>
+          </div>
+          <button type="submit" class="btn-secondary">Add to Menu</button>
+        </form>
+      </div>
+
+      <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--surface-border); display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <button type="button" class="btn-secondary" id="host-clear-all-btn" style="color: var(--danger); border-color: var(--danger);">
+          ⚠️ Clear All Claimed Picks
+        </button>
+        <span style="font-size: 12px; color: var(--text-dim);">Resets all allocated items back to open on the wheel.</span>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Winner Reveal Modal Overlay -->
+  <div class="modal-overlay" id="reveal-modal" hidden>
+    <div class="modal-card">
+      <p class="eyebrow-tag">🎉 THE WHEEL HAS SPOKEN!</p>
+      <div class="reveal-emoji" id="reveal-emoji">🍲</div>
+      <h2 class="reveal-title">
+        <span id="reveal-guest-name">Guest</span> is bringing<br>
+        <span class="reveal-item-name" id="reveal-item-name">Dish</span>
+      </h2>
+      <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px;">
+        It has been prefilled live on the party lineup! You have completed your 1 spin.
+      </p>
+      <button type="button" class="btn-primary btn-whatsapp" id="reveal-share-btn">
+        💬 Share Result on WhatsApp
+      </button>
+      <button type="button" class="btn-secondary" id="reveal-close-btn" style="margin-top: 10px; width: 100%;">
+        Close & View Lineup
+      </button>
+    </div>
+  </div>
+
+  <!-- Host PIN Login Modal Overlay -->
+  <div class="modal-overlay" id="host-pin-modal" hidden>
+    <div class="modal-card" style="max-width: 360px;">
+      <h2 class="reveal-title" style="font-size: 22px;">🔐 Host Access</h2>
+      <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
+        Enter Host PIN to access organizer controls.
+      </p>
+      <form id="host-pin-form">
+        <input type="password" id="host-pin-input" class="input-field" placeholder="Enter PIN" style="text-align: center; font-size: 20px; letter-spacing: 4px; margin-bottom: 16px;" autofocus required>
+        <button type="submit" class="btn-primary gold" style="min-height: 44px; font-size: 16px;">Unlock Host Tools</button>
+      </form>
+      <button type="button" class="btn-secondary" id="host-pin-close" style="margin-top: 10px; width: 100%;">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Confetti Canvas -->
+  <canvas class="confetti-canvas" id="confetti-canvas" hidden></canvas>
+
+  <!-- Mobile Sticky Bottom Action Bar -->
+  <div class="mobile-sticky-bar">
+    <button type="button" class="btn-primary" id="mobile-spin-btn">
+      🎲 Spin Wheel
+    </button>
+    <button type="button" class="btn-secondary btn-whatsapp" id="mobile-whatsapp-btn">
+      💬 WhatsApp
+    </button>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
