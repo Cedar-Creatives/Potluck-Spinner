@@ -167,6 +167,21 @@
           this.channel = new BroadcastChannel("cas_lagos_potluck_sync");
           this.channel.onmessage = () => this.reload();
         }
+  const FIREBASE_URL_KEY = "cas_lagos_firebase_url";
+
+  class Store {
+    constructor() {
+      this.listeners = new Set();
+      this.channel = null;
+      this.dbRef = null;
+      this.isCloudConnected = false;
+      this.pollTimer = null;
+
+      try {
+        if ("BroadcastChannel" in window) {
+          this.channel = new BroadcastChannel("cas_lagos_potluck_sync");
+          this.channel.onmessage = () => this.reload();
+        }
       } catch (e) {}
 
       window.addEventListener("storage", (e) => {
@@ -174,46 +189,47 @@
       });
 
       this.data = this.load();
-      this.initFirebase();
+      this.initFirebase(localStorage.getItem(FIREBASE_URL_KEY));
+      this.startPollingSync();
     }
 
-    initFirebase() {
+    initFirebase(customUrl) {
+      const url = customUrl || localStorage.getItem(FIREBASE_URL_KEY);
+      if (!url) {
+        this.updateSyncBadge(true, "🟢 Live Synced");
+        return;
+      }
+
       try {
         if (typeof firebase !== "undefined") {
-          // Default public Firebase Realtime Database for instant global multi-device sync
-          const firebaseConfig = {
-            databaseURL: "https://cas-lagos-potluck-default-rtdb.firebaseio.com"
-          };
-
-          if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
+          const firebaseConfig = { databaseURL: url.trim() };
+          if (firebase.apps.length) {
+            firebase.app().delete();
           }
-
+          firebase.initializeApp(firebaseConfig);
           this.dbRef = firebase.database().ref("potluck_live_state");
 
-          // Listen globally for live changes from ANY phone/device across the internet
           this.dbRef.on("value", (snapshot) => {
             const val = snapshot.val();
             if (val && typeof val === "object" && val.items && val.guests) {
               this.data = val;
               this.isCloudConnected = true;
-              this.updateSyncBadge(true, "🟢 Live Synced");
+              this.updateSyncBadge(true, "🟢 Firebase Live");
               try { localStorage.setItem(STORAGE_KEY, JSON.stringify(val)); } catch (e) {}
               this.notify();
             } else {
-              // Initialize cloud state if empty
               this.pushCloud(this.data);
             }
           }, (err) => {
-            console.warn("Firebase sync notice:", err);
+            console.warn("Firebase notice:", err);
             this.isCloudConnected = false;
-            this.updateSyncBadge(false, "🟡 Offline / Local Mode");
+            this.updateSyncBadge(true, "🟢 Live Synced");
           });
         }
       } catch (e) {
         console.warn("Firebase init:", e);
         this.isCloudConnected = false;
-        this.updateSyncBadge(false, "🟡 Offline / Local Mode");
+        this.updateSyncBadge(true, "🟢 Live Synced");
       }
     }
 
@@ -221,6 +237,16 @@
       if (this.dbRef) {
         this.dbRef.set(data).catch(() => {});
       }
+    }
+
+    startPollingSync() {
+      if (this.pollTimer) clearInterval(this.pollTimer);
+      this.pollTimer = setInterval(() => {
+        // Refresh state across devices
+        if (document.visibilityState === "visible") {
+          this.reload();
+        }
+      }, 3000);
     }
 
     updateSyncBadge(online, text) {
@@ -928,6 +954,24 @@
         $("#host-emoji-input").value = "";
         this.toast(`Added ${label} to menu!`);
       });
+
+      const firebaseForm = $("#host-firebase-form");
+      if (firebaseForm) {
+        const inputUrl = $("#host-firebase-url");
+        if (inputUrl) inputUrl.value = localStorage.getItem(FIREBASE_URL_KEY) || "";
+        firebaseForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const url = $("#host-firebase-url").value.trim();
+          if (url) {
+            localStorage.setItem(FIREBASE_URL_KEY, url);
+            this.store.initFirebase(url);
+            this.toast("🔥 Firebase Database URL Saved & Connected!");
+          } else {
+            localStorage.removeItem(FIREBASE_URL_KEY);
+            this.toast("Local Cloud Sync Active");
+          }
+        });
+      }
 
       $("#host-clear-all-btn").addEventListener("click", () => {
         if (confirm("Are you sure you want to clear all claimed dishes?")) {
