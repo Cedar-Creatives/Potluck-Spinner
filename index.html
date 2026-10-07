@@ -33,7 +33,13 @@
       <img src="party_banner.jpg" alt="Cas Lagos House Party Banner" class="hero-banner-img">
       <div class="hero-body">
         <div class="hero-top-row">
-          <span class="badge-kicker">🏠 CAS LAGOS END OF YEAR GET-TOGETHER</span>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            <span class="badge-kicker">🏠 CAS LAGOS END OF YEAR GET-TOGETHER</span>
+            <span class="badge-kicker sync-status-badge" id="sync-status-indicator">
+              <span class="sync-dot"></span>
+              <span id="sync-status-text">Connecting Live...</span>
+            </span>
+          </div>
           <div class="header-actions">
             <button type="button" class="icon-btn" id="sound-toggle-btn" title="Toggle Sound FX" aria-label="Toggle Sound FX">
               🔊
@@ -281,6 +287,10 @@
 
   <!-- Toast Container -->
   <div class="toast-container" id="toast-container"></div>
+
+  <!-- Firebase SDKs for Global Real-time Multi-Device Sync -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
   <script src="app.js"></script>
 </body>

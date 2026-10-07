@@ -159,6 +159,9 @@
     constructor() {
       this.listeners = new Set();
       this.channel = null;
+      this.dbRef = null;
+      this.isCloudConnected = false;
+
       try {
         if ("BroadcastChannel" in window) {
           this.channel = new BroadcastChannel("cas_lagos_potluck_sync");
@@ -171,6 +174,66 @@
       });
 
       this.data = this.load();
+      this.initFirebase();
+    }
+
+    initFirebase() {
+      try {
+        if (typeof firebase !== "undefined") {
+          // Default public Firebase Realtime Database for instant global multi-device sync
+          const firebaseConfig = {
+            databaseURL: "https://cas-lagos-potluck-default-rtdb.firebaseio.com"
+          };
+
+          if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+          }
+
+          this.dbRef = firebase.database().ref("potluck_live_state");
+
+          // Listen globally for live changes from ANY phone/device across the internet
+          this.dbRef.on("value", (snapshot) => {
+            const val = snapshot.val();
+            if (val && typeof val === "object" && val.items && val.guests) {
+              this.data = val;
+              this.isCloudConnected = true;
+              this.updateSyncBadge(true, "🟢 Live Synced");
+              try { localStorage.setItem(STORAGE_KEY, JSON.stringify(val)); } catch (e) {}
+              this.notify();
+            } else {
+              // Initialize cloud state if empty
+              this.pushCloud(this.data);
+            }
+          }, (err) => {
+            console.warn("Firebase sync notice:", err);
+            this.isCloudConnected = false;
+            this.updateSyncBadge(false, "🟡 Offline / Local Mode");
+          });
+        }
+      } catch (e) {
+        console.warn("Firebase init:", e);
+        this.isCloudConnected = false;
+        this.updateSyncBadge(false, "🟡 Offline / Local Mode");
+      }
+    }
+
+    pushCloud(data) {
+      if (this.dbRef) {
+        this.dbRef.set(data).catch(() => {});
+      }
+    }
+
+    updateSyncBadge(online, text) {
+      const badge = document.getElementById("sync-status-indicator");
+      const label = document.getElementById("sync-status-text");
+      if (badge && label) {
+        label.textContent = text;
+        if (online) {
+          badge.classList.remove("offline");
+        } else {
+          badge.classList.add("offline");
+        }
+      }
     }
 
     load() {
@@ -200,6 +263,7 @@
       this.data = data;
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
       if (this.channel) this.channel.postMessage({ type: "UPDATE", ts: Date.now() });
+      this.pushCloud(data);
       this.notify();
     }
 
