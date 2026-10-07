@@ -182,11 +182,7 @@
     }
 
     initFirebase(customUrl) {
-      const url = customUrl || localStorage.getItem(FIREBASE_URL_KEY);
-      if (!url) {
-        this.updateSyncBadge(true, "🟢 Live Synced");
-        return;
-      }
+      const url = customUrl || localStorage.getItem(FIREBASE_URL_KEY) || "https://potluck-spinner-default-rtdb.firebaseio.com";
 
       try {
         if (typeof firebase !== "undefined") {
@@ -202,7 +198,6 @@
             if (val && typeof val === "object" && val.items && val.guests) {
               this.data = val;
               this.isCloudConnected = true;
-              this.updateSyncBadge(true, "🟢 Firebase Live");
               try { localStorage.setItem(STORAGE_KEY, JSON.stringify(val)); } catch (e) {}
               this.notify();
             } else {
@@ -210,14 +205,10 @@
             }
           }, (err) => {
             console.warn("Firebase notice:", err);
-            this.isCloudConnected = false;
-            this.updateSyncBadge(true, "🟢 Live Synced");
           });
         }
       } catch (e) {
         console.warn("Firebase init:", e);
-        this.isCloudConnected = false;
-        this.updateSyncBadge(true, "🟢 Live Synced");
       }
     }
 
