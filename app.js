@@ -155,18 +155,6 @@
      State Store (Multi-Tab & Real-time Live Sync)
      ========================================================================== */
 
-  class Store {
-    constructor() {
-      this.listeners = new Set();
-      this.channel = null;
-      this.dbRef = null;
-      this.isCloudConnected = false;
-
-      try {
-        if ("BroadcastChannel" in window) {
-          this.channel = new BroadcastChannel("cas_lagos_potluck_sync");
-          this.channel.onmessage = () => this.reload();
-        }
   const FIREBASE_URL_KEY = "cas_lagos_firebase_url";
 
   class Store {
